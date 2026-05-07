@@ -52,6 +52,28 @@ The project has zero runtime dependencies, so `uv sync` only sets up the
 Python interpreter, creates a virtualenv, and installs the project in
 editable mode so the `nxc-scan` console script becomes available.
 
+## Install as a uv tool
+
+If you want a global command without cloning the repo, install directly from
+GitHub:
+
+```bash
+uv tool install https://github.com/pexmee/nxc-scan.git
+```
+
+Then run:
+
+```bash
+nxc-scan -h
+```
+
+Optional maintenance commands:
+
+```bash
+uv tool upgrade nxc-scan
+uv tool uninstall nxc-scan
+```
+
 ## Run
 
 The recommended invocation is the registered console script:
