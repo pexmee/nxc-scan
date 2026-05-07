@@ -1,0 +1,7 @@
+[project]
+name = "nxc-scan"
+version = "0.1.0"
+description = "Wrapper tool for using multiple serivces of nxc in one command."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
