@@ -204,13 +204,12 @@ def print_header(
     timeout: int | None,
 ) -> None:
     svc_display = ", ".join(f"{ALL_SERVICES.index(s) + 1}.{s}" for s in services)
-    pw_display = "*" * len(password) if password else "(none)"
     print(f"\n{_WIDE}")
     print("  nxc-scan")
     print(_WIDE)
     print(f"  Target   : {target or '(none)'}")
     print(f"  Username : {username or '(none)'}")
-    print(f"  Password : {pw_display}")
+    print(f"  Password : {password or '(none)'}")
     print(f"  Services : {svc_display}")
     print(f"  S-Timeout: {f'{timeout}s' if timeout else 'none'}")
     print(_WIDE)
