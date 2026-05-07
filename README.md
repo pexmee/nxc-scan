@@ -49,27 +49,33 @@ uv sync
 ```
 
 The project has zero runtime dependencies, so `uv sync` only sets up the
-Python interpreter and a virtualenv.
+Python interpreter, creates a virtualenv, and installs the project in
+editable mode so the `nxc-scan` console script becomes available.
 
 ## Run
 
-With uv:
+The recommended invocation is the registered console script:
 
 ```bash
-uv run python nxc_scan.py <args>
+uv run nxc-scan <args>
 ```
 
-Or, after activating the venv (`source .venv/bin/activate`), simply:
+After activating the venv you can drop the `uv run` prefix:
+
+```bash
+source .venv/bin/activate
+nxc-scan <args>
+```
+
+You can also run the script file directly without uv:
 
 ```bash
 python nxc_scan.py <args>
 ```
 
-If you want a shorter command, you can mark the script executable and call
-it directly:
+Or, after `chmod +x nxc_scan.py`:
 
 ```bash
-chmod +x nxc_scan.py
 ./nxc_scan.py <args>
 ```
 
@@ -78,37 +84,37 @@ chmod +x nxc_scan.py
 Quick-start banner (printed when run with no arguments):
 
 ```bash
-uv run python nxc_scan.py
+uv run nxc-scan
 ```
 
 Unauthenticated sweep of every protocol:
 
 ```bash
-uv run python nxc_scan.py 10.0.0.1
+uv run nxc-scan 10.0.0.1
 ```
 
 Credential spray, keep going after the first valid hit:
 
 ```bash
-uv run python nxc_scan.py 10.0.0.1 -u users.txt -p passwords.txt --continue-on-success
+uv run nxc-scan 10.0.0.1 -u users.txt -p passwords.txt --continue-on-success
 ```
 
 SMB and LDAP only, kill each scan after 60 seconds:
 
 ```bash
-uv run python nxc_scan.py 10.0.0.1 -s smb,ldap -u admin -p pass --service-timeout 60
+uv run nxc-scan 10.0.0.1 -s smb,ldap -u admin -p pass --service-timeout 60
 ```
 
 Protocols 1 through 3 with Kerberos:
 
 ```bash
-uv run python nxc_scan.py dc.corp.local -s 1-3 -u admin -k
+uv run nxc-scan dc.corp.local -s 1-3 -u admin -k
 ```
 
 SMB share spider plus LDAP BloodHound collection in one run:
 
 ```bash
-uv run python nxc_scan.py 10.0.0.1 -u admin -p pass \
+uv run nxc-scan 10.0.0.1 -u admin -p pass \
     --smb-flags="--share C\$ --spider --regex \\.txt$" \
     --ldap-flags="--bloodhound -c All"
 ```
@@ -117,13 +123,13 @@ Exclude a single protocol (use `=` to avoid argparse interpreting the leading
 dash as a new option):
 
 ```bash
-uv run python nxc_scan.py 10.0.0.1 -s=-smb --service-timeout 45
+uv run nxc-scan 10.0.0.1 -s=-smb --service-timeout 45
 ```
 
 Hash-based authentication:
 
 ```bash
-uv run python nxc_scan.py 10.0.0.1 -u admin -H aad3b435b51404eeaad3b435b51404ee:HASH
+uv run nxc-scan 10.0.0.1 -u admin -H aad3b435b51404eeaad3b435b51404ee:HASH
 ```
 
 ## Service selection syntax
@@ -168,8 +174,8 @@ To see the full list of flags a protocol accepts, delegate to `nxc`'s own
 help:
 
 ```bash
-uv run python nxc_scan.py smb -h
-uv run python nxc_scan.py ldap -h
+uv run nxc-scan smb -h
+uv run nxc-scan ldap -h
 ```
 
 ## Config file
@@ -177,9 +183,9 @@ uv run python nxc_scan.py ldap -h
 Generate a template, edit it, then load it with `--config`:
 
 ```bash
-uv run python nxc_scan.py --dump-config > my_config.json
+uv run nxc-scan --dump-config > my_config.json
 # edit my_config.json
-uv run python nxc_scan.py --config my_config.json 10.0.0.1
+uv run nxc-scan --config my_config.json 10.0.0.1
 ```
 
 Top-level JSON keys:
@@ -192,13 +198,13 @@ CLI flags always override the corresponding values from the config file.
 
 ## Help levels
 
-| Invocation                | Output                                                 |
-|---------------------------|--------------------------------------------------------|
-| `nxc_scan.py`             | Quick-start banner with usage and examples             |
-| `nxc_scan.py -h`          | Standard `argparse` flag reference                     |
-| `nxc_scan.py -hh`         | Full manual: every option grouped by topic, examples   |
-| `nxc_scan.py <proto> -h`  | `nxc`'s native help for that protocol (e.g. `smb -h`)  |
-| `nxc_scan.py --dump-config` | Print a config template and exit                     |
+| Invocation                  | Output                                                 |
+|-----------------------------|--------------------------------------------------------|
+| `nxc-scan`                  | Quick-start banner with usage and examples             |
+| `nxc-scan -h`               | Standard `argparse` flag reference                     |
+| `nxc-scan -hh`              | Full manual: every option grouped by topic, examples   |
+| `nxc-scan <proto> -h`       | `nxc`'s native help for that protocol (e.g. `smb -h`)  |
+| `nxc-scan --dump-config`    | Print a config template and exit                       |
 
 ## Project layout
 

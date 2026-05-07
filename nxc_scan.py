@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import os
 import subprocess
 import sys
 
@@ -15,12 +16,13 @@ _THIN = "─" * 64
 _SERVICE_SET = set(ALL_SERVICES)
 
 
-# ---------------------------------------------------------------------------
-# Help tiers
-# ---------------------------------------------------------------------------
+def prog_name() -> str:
+    """Name of the program as it was invoked (e.g. "nxc-scan" or "nxc_scan.py")."""
+    return os.path.basename(sys.argv[0]) or "nxc-scan"
 
 
 def print_brief_usage() -> None:
+    p = prog_name()
     protos = "  ".join(f"{i + 1}.{s}" for i, s in enumerate(ALL_SERVICES))
     print(f"""
 {_WIDE}
@@ -28,16 +30,16 @@ def print_brief_usage() -> None:
 {_WIDE}
 
   Usage:
-    nxc_scan.py <target> [options]
-    nxc_scan.py --config FILE [<target>] [options]
+    {p} <target> [options]
+    {p} --config FILE [<target>] [options]
 
   Examples:
-    nxc_scan.py 10.0.0.1
-    nxc_scan.py 10.0.0.1 -u admin -p pass
-    nxc_scan.py 10.0.0.1 -s smb,ldap -u admin -p pass --continue-on-success
-    nxc_scan.py 10.0.0.1 -s 1-3 --service-timeout 30
-    nxc_scan.py 10.0.0.1 --smb-flags="--shares" --ldap-flags="--bloodhound -c All"
-    nxc_scan.py --config my_config.json 10.0.0.1
+    {p} 10.0.0.1
+    {p} 10.0.0.1 -u admin -p pass
+    {p} 10.0.0.1 -s smb,ldap -u admin -p pass --continue-on-success
+    {p} 10.0.0.1 -s 1-3 --service-timeout 30
+    {p} 10.0.0.1 --smb-flags="--shares" --ldap-flags="--bloodhound -c All"
+    {p} --config my_config.json 10.0.0.1
 
   Protocols:
     {protos}
@@ -51,6 +53,7 @@ def print_brief_usage() -> None:
 
 
 def print_extended_help() -> None:
+    p = prog_name()
     protos_grid = "\n    ".join(
         "  ".join(f"{i + 1:2d}. {ALL_SERVICES[i]:<6}" for i in row)
         for row in [range(0, 5), range(5, 10)]
@@ -62,8 +65,8 @@ def print_extended_help() -> None:
 {_WIDE}
 
 USAGE
-  nxc_scan.py <target> [options]
-  nxc_scan.py --config FILE [<target>] [options]
+  {p} <target> [options]
+  {p} --config FILE [<target>] [options]
 
 CORE OPTIONS
   target                     IP, CIDR, hostname, range, or file of targets
@@ -147,7 +150,7 @@ PER-PROTOCOL FLAGS
 CONFIG FILE
   Generate a template, edit it, then pass it with --config:
 
-    nxc_scan.py --dump-config > my_config.json
+    {p} --dump-config > my_config.json
 
   Top-level keys in the JSON:
     target, username, password, services, service_timeout
@@ -165,30 +168,30 @@ HELP LEVELS
 
 EXAMPLES
   # Unauthenticated sweep of all protocols
-  nxc_scan.py 10.0.0.1
+  {p} 10.0.0.1
 
   # Credential spray — keep going after first hit
-  nxc_scan.py 10.0.0.1 -u users.txt -p passwords.txt --continue-on-success
+  {p} 10.0.0.1 -u users.txt -p passwords.txt --continue-on-success
 
   # SMB + LDAP only, kill each scan after 60 s
-  nxc_scan.py 10.0.0.1 -s smb,ldap -u admin -p pass --service-timeout 60
+  {p} 10.0.0.1 -s smb,ldap -u admin -p pass --service-timeout 60
 
   # Protocols 1-3 with Kerberos
-  nxc_scan.py dc.corp.local -s 1-3 -u admin -k
+  {p} dc.corp.local -s 1-3 -u admin -k
 
   # SMB spider + LDAP bloodhound in one run
-  nxc_scan.py 10.0.0.1 -u admin -p pass \\
+  {p} 10.0.0.1 -u admin -p pass \\
       --smb-flags="--share C$ --spider --regex \\.txt$" \\
       --ldap-flags="--bloodhound -c All"
 
   # Load config, override target on CLI
-  nxc_scan.py --config engagements/corp.json 10.0.0.1
+  {p} --config engagements/corp.json 10.0.0.1
 
   # Exclude SMB, 45-second per-service timeout
-  nxc_scan.py 10.0.0.1 -s=-smb --service-timeout 45
+  {p} 10.0.0.1 -s=-smb --service-timeout 45
 
   # Hash-based auth, NTLM only
-  nxc_scan.py 10.0.0.1 -u admin -H aad3b435b51404eeaad3b435b51404ee:HASH
+  {p} 10.0.0.1 -u admin -H aad3b435b51404eeaad3b435b51404ee:HASH
 
 {_WIDE}""")
 

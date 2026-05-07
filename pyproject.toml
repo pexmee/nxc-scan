@@ -1,7 +1,18 @@
 [project]
 name = "nxc-scan"
 version = "0.1.0"
-description = "Wrapper tool for using multiple serivces of nxc in one command."
+description = "Wrapper tool for using multiple services of nxc in one command."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
+
+[project.scripts]
+nxc-scan = "nxc_scan:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["nxc"]
+include = ["nxc_scan.py"]
