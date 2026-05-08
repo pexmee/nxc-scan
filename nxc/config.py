@@ -12,6 +12,7 @@ def create_default_config() -> dict[str, Any]:
         "password": None,
         "services": "all",
         "service_timeout": None,
+        "output_file": None,
         "global_flags": {
             # Generic
             "threads": None,

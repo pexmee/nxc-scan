@@ -93,6 +93,12 @@ json config:
         action="store_true",
         help="Print a template JSON config to stdout and exit.",
     )
+    p.add_argument(
+        "--output-file",
+        default=None,
+        metavar="FILE",
+        help="Pipe output to a file as it simultaneously prints to the console",
+    )
 
     # ── Global nxc flags ──────────────────────────────────────────────────
     g = p.add_argument_group("global nxc flags  (applied to every protocol run)")
