@@ -1,3 +1,4 @@
+import shlex
 import subprocess
 import sys
 
@@ -12,7 +13,7 @@ def run_service(service: str, cmd: list[str], timeout: int | None) -> int:
     """
     print(f"\n{_SEP}")
     print(f"  Protocol : {service.upper()}")
-    print(f"  Command  : {' '.join(cmd)}")
+    print(f"  Command  : {shlex.join(cmd)}")
     if timeout:
         print(f"  Timeout  : {timeout}s")
     print(_SEP)
