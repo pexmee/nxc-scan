@@ -196,10 +196,18 @@ EXAMPLES
 {_WIDE}""")
 
 
+def _cred_display(value: str | None) -> str:
+    if value is None:
+        return "(none)"
+    if value == "":
+        return "(empty)"
+    return value
+
+
 def print_header(
     target: str,
     username: str | None,
-    password: str,
+    password: str | None,
     services: list[str],
     timeout: int | None,
 ) -> None:
@@ -208,8 +216,8 @@ def print_header(
     print("  nxc-scan")
     print(_WIDE)
     print(f"  Target   : {target or '(none)'}")
-    print(f"  Username : {username or '(none)'}")
-    print(f"  Password : {password or '(none)'}")
+    print(f"  Username : {_cred_display(username)}")
+    print(f"  Password : {_cred_display(password)}")
     print(f"  Services : {svc_display}")
     print(f"  S-Timeout: {f'{timeout}s' if timeout else 'none'}")
     print(_WIDE)
@@ -283,9 +291,14 @@ def main() -> None:
 
     service_timeout: int | None = cfg.get("service_timeout")
     target = cfg.get("target") or ""
-    password = cfg.get("password") or ""
 
-    print_header(target, cfg.get("username"), password, services, service_timeout)
+    print_header(
+        target,
+        cfg.get("username"),
+        cfg.get("password"),
+        services,
+        service_timeout,
+    )
 
     results: dict[str, int] = {}
     for service in services:

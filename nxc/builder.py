@@ -9,11 +9,15 @@ def build_command(service: str, cfg: dict[str, Any]) -> list[str]:
     if target := (cfg.get("target") or ""):
         cmd.append(target)
 
-    if username := (cfg.get("username") or ""):
-        cmd.extend(["-u", username])
+    # Empty strings are meaningful here ("" = explicit empty username/password,
+    # used for null sessions and similar). Only skip when the value is None.
+    username = cfg.get("username")
+    if username is not None:
+        cmd.extend(["-u", str(username)])
 
-    if password := (cfg.get("password") or ""):
-        cmd.extend(["-p", password])
+    password = cfg.get("password")
+    if password is not None:
+        cmd.extend(["-p", str(password)])
 
     _append_global_flags(cmd, cfg.get("global_flags", {}))
 
