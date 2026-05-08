@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 from nxc.builder import build_command
-from nxc.cli import build_arg_parser, extract_global_flags, extract_service_flags
+from nxc.cli import build_arg_parser, extract_global_flags, extract_service_flags, extract_service_batches
 from nxc.config import create_default_config, deep_merge, load_config
 from nxc.runner import run_service
 from nxc.services import ALL_SERVICES, parse_services
@@ -318,6 +318,15 @@ def main() -> None:
         if flags is not None:
             cfg["service_flags"][svc] = flags
 
+    for svc, batches in extract_service_batches(args).items():
+        if batches is not None:
+            if isinstance(batches, str):
+                try:
+                    cfg["service_batches"][svc] = json.loads(batches)
+                except json.JSONDecodeError as e:
+                    print(f"[!] Error parsing batch JSON for {svc}: {e}")
+                    sys.exit(1)
+
     services = parse_services(cfg.get("services") or "all")
     if not services:
         print("[!] No protocols matched the selection — nothing to run.")
@@ -340,8 +349,24 @@ def main() -> None:
 
     results: dict[str, int] = {}
     for service in services:
-        cmd = build_command(service, cfg)
-        results[service] = run_service(service, cmd, service_timeout, stream_output=bool(output_file))
+        batches = cfg.get("service_batches", {}).get(service)
+        if not batches:
+            cmd = build_command(service, cfg)
+            results[service] = run_service(service, cmd, service_timeout, stream_output=bool(output_file))
+        else:
+            batch_results = []
+            for i, batch_flags in enumerate(batches):
+                print(f"\n{_THIN}\n  Running {service} batch {i + 1}/{len(batches)}\n{_THIN}")
+                flags_str = " ".join(batch_flags) if isinstance(batch_flags, list) else batch_flags
+                batch_cfg = deep_merge(cfg, {"service_flags": {service: flags_str}})
+                cmd = build_command(service, batch_cfg)
+                rc = run_service(service, cmd, service_timeout, stream_output=bool(output_file))
+                batch_results.append(rc)
+            
+            if -1 in batch_results:
+                results[service] = -1
+            else:
+                results[service] = next((rc for rc in batch_results if rc != 0), 0)
 
     print_summary(results)
 
