@@ -204,6 +204,39 @@ def _cred_display(value: str | None) -> str:
     return value
 
 
+class TeeLogger:
+    def __init__(self, filename: str):
+        self.terminal = sys.stdout
+        self.log = open(filename, "a", encoding="utf-8")
+        self.encoding = getattr(self.terminal, "encoding", "utf-8")
+        self.errors = getattr(self.terminal, "errors", "replace")
+
+    def write(self, message: str) -> None:
+        try:
+            self.terminal.write(message)
+        except UnicodeEncodeError:
+            safe_msg = message.encode(self.encoding, errors="replace").decode(self.encoding)
+            self.terminal.write(safe_msg)
+            
+        self.log.write(message)
+        self.terminal.flush()
+        self.log.flush()
+
+    def flush(self) -> None:
+        self.terminal.flush()
+        self.log.flush()
+
+    def isatty(self) -> bool:
+        if hasattr(self.terminal, "isatty"):
+            return self.terminal.isatty()
+        return False
+
+    def fileno(self) -> int:
+        if hasattr(self.terminal, "fileno"):
+            return self.terminal.fileno()
+        raise AttributeError("fileno not available")
+
+
 def print_header(
     target: str,
     username: str | None,
@@ -272,6 +305,7 @@ def main() -> None:
         ("password", "password"),
         ("services", "services"),
         ("service_timeout", "service_timeout"),
+        ("output_file", "output_file"),
     ]:
         if (val := getattr(args, attr)) is not None:
             cfg[key] = val
@@ -291,6 +325,10 @@ def main() -> None:
 
     service_timeout: int | None = cfg.get("service_timeout")
     target = cfg.get("target") or ""
+    output_file = cfg.get("output_file")
+
+    if output_file:
+        sys.stdout = TeeLogger(output_file)
 
     print_header(
         target,
@@ -303,7 +341,7 @@ def main() -> None:
     results: dict[str, int] = {}
     for service in services:
         cmd = build_command(service, cfg)
-        results[service] = run_service(service, cmd, service_timeout)
+        results[service] = run_service(service, cmd, service_timeout, stream_output=bool(output_file))
 
     print_summary(results)
 
