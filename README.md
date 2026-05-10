@@ -40,6 +40,13 @@ Features:
   https://www.netexec.wiki/ or via `pipx install netexec`.
 - [uv](https://docs.astral.sh/uv/) (recommended) for running the project.
 
+Runtime dependencies (installed automatically):
+
+| Package | Purpose |
+|---|---|
+| [rich](https://github.com/Textualize/rich) | Coloured terminal output for help messages |
+| [rich-argparse](https://github.com/hamdanal/rich-argparse) | Rich-powered argparse help formatter |
+
 ## Install with uv
 
 ```bash
@@ -48,9 +55,9 @@ cd nxc-scan
 uv sync
 ```
 
-The project has zero runtime dependencies, so `uv sync` only sets up the
-Python interpreter, creates a virtualenv, and installs the project in
-editable mode so the `nxc-scan` console script becomes available.
+`uv sync` resolves the runtime dependencies, creates a virtualenv, and
+installs the project in editable mode so the `nxc-scan` console script
+becomes available.
 
 ## Install as a uv tool
 
@@ -137,7 +144,7 @@ SMB share spider plus LDAP BloodHound collection in one run:
 
 ```bash
 uv run nxc-scan 10.0.0.1 -u admin -p pass \
-    --smb-flags="--share C\$ --spider --regex \\.txt$" \
+    --smb-flags="--share C\$ --spider C\$ --regex \\.txt$" \
     --ldap-flags="--bloodhound -c All"
 ```
 
@@ -185,7 +192,7 @@ single string. The string is split with `shlex.split`, so quoting works the
 same as in the shell:
 
 ```bash
---smb-flags="--share C$ --spider --regex \\.txt$"
+--smb-flags="--share C$ --spider C$ --regex \\.txt$"
 --ldap-flags="--bloodhound -c All"
 --ssh-flags="-x 'id && hostname'"
 --mssql-flags="-q 'SELECT @@version'"
@@ -228,6 +235,22 @@ CLI flags always override the corresponding values from the config file.
 | `nxc-scan <proto> -h`       | `nxc`'s native help for that protocol (e.g. `smb -h`)  |
 | `nxc-scan --dump-config`    | Print a config template and exit                       |
 
+## Development
+
+Install with dev dependencies (includes `pytest`):
+
+```bash
+uv sync
+```
+
+Common tasks via `make`:
+
+```bash
+make format   # ruff format .
+make lint     # ruff check .
+make test     # pytest tests/ -v
+```
+
 ## Project layout
 
 ```
@@ -240,6 +263,12 @@ nxc-scan/
 │   ├── builder.py       Translates a config dict into an nxc argv list
 │   ├── runner.py        Subprocess invocation with timeout handling
 │   └── cli.py           argparse setup + CLI-to-config bridge
+├── tests/               pytest test suite
+│   ├── test_builder.py
+│   ├── test_cli_to_command.py
+│   ├── test_runner.py
+│   └── test_services.py
+├── Makefile
 ├── pyproject.toml
 └── README.md
 ```
