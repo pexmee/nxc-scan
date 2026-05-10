@@ -6,7 +6,9 @@ import sys
 _SEP = "─" * 64
 
 
-def run_service(service: str, cmd: list[str], timeout: int | None, stream_output: bool = False) -> int:
+def run_service(
+    service: str, cmd: list[str], timeout: int | None, stream_output: bool = False
+) -> int:
     """Invoke nxc for *service* and return its exit code.
 
     Returns ``-1`` when the process is killed by *timeout*. Exits the whole
@@ -23,6 +25,8 @@ def run_service(service: str, cmd: list[str], timeout: int | None, stream_output
     if stream_output:
         env["PYTHONUNBUFFERED"] = "1"
 
+    process: subprocess.Popen[str] | None = None
+
     try:
         if stream_output:
             process = subprocess.Popen(
@@ -33,6 +37,7 @@ def run_service(service: str, cmd: list[str], timeout: int | None, stream_output
                 bufsize=1,
                 env=env,
             )
+            assert process.stdout is not None
             for line in process.stdout:
                 sys.stdout.write(line)
             process.wait(timeout=timeout)
@@ -41,7 +46,7 @@ def run_service(service: str, cmd: list[str], timeout: int | None, stream_output
             result = subprocess.run(cmd, timeout=timeout)
             return result.returncode
     except subprocess.TimeoutExpired:
-        if stream_output and 'process' in locals():
+        if process is not None:
             process.kill()
             process.wait()
         print(f"\n[!] {service.upper()} timed out after {timeout}s — skipping.")
