@@ -52,6 +52,7 @@ def create_default_config() -> dict[str, Any]:
             "module_options": None,
         },
         "service_flags": {svc: "" for svc in ALL_SERVICES},
+        "service_batches": {svc: [] for svc in ALL_SERVICES},
     }
 
 

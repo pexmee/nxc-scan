@@ -339,6 +339,22 @@ json config:
             help=f"Extra flags for the {svc} scan",
         )
 
+    # ── Per-service batches ───────────────────────────────────────────────
+    sb = p.add_argument_group(
+        "per-protocol batches",
+        "Run a service multiple times with different flag combinations.",
+    )
+    for svc in ALL_SERVICES:
+        sb.add_argument(
+            f"--batch-{svc}",
+            dest=f"batch_{svc}",
+            nargs="?",
+            const=True,
+            default=None,
+            metavar="JSON",
+            help=f"Run batches for {svc}. Optionally provide inline JSON list of flag lists.",
+        )
+
     return p
 
 
@@ -386,3 +402,8 @@ def extract_global_flags(args: argparse.Namespace) -> dict[str, Any]:
 def extract_service_flags(args: argparse.Namespace) -> dict[str, str | None]:
     """Return per-service extra flags from *args* (``None`` = unset)."""
     return {svc: getattr(args, f"{svc}_flags") for svc in ALL_SERVICES}
+
+
+def extract_service_batches(args: argparse.Namespace) -> dict[str, str | bool | None]:
+    """Return per-service batches from *args* (``None`` = unset, ``True`` = config, ``str`` = json)."""
+    return {svc: getattr(args, f"batch_{svc}") for svc in ALL_SERVICES}
